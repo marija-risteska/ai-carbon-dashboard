@@ -286,31 +286,36 @@
   </div>
 
   <script>
-    const hoursInput = document.getElementById('hours');
-    const gpusInput = document.getElementById('gpus');
-    const powerInput = document.getElementById('power');
-    const savingsInput = document.getElementById('savings');
+    var hoursInput = document.getElementById('hours');
+    var gpusInput = document.getElementById('gpus');
+    var powerInput = document.getElementById('power');
+    var savingsInput = document.getElementById('savings');
 
-    const hoursDisplay = document.getElementById('hoursDisplay');
-    const gpusDisplay = document.getElementById('gpusDisplay');
-    const powerDisplay = document.getElementById('powerDisplay');
-    const savingsDisplay = document.getElementById('savingsDisplay');
+    var hoursDisplay = document.getElementById('hoursDisplay');
+    var gpusDisplay = document.getElementById('gpusDisplay');
+    var powerDisplay = document.getElementById('powerDisplay');
+    var savingsDisplay = document.getElementById('savingsDisplay');
 
-    const aiCostVal = document.getElementById('aiCostVal');
-    const dailySavingsVal = document.getElementById('dailySavingsVal');
-    const paybackVal = document.getElementById('paybackVal');
+    var aiCostVal = document.getElementById('aiCostVal');
+    var dailySavingsVal = document.getElementById('dailySavingsVal');
+    var paybackVal = document.getElementById('paybackVal');
 
-    const statusBanner = document.getElementById('statusBanner');
-    const statusText = document.getElementById('statusText');
+    var statusBanner = document.getElementById('statusBanner');
+    var statusText = document.getElementById('statusText');
 
-    let chart;
+    var chart;
 
     function initChart() {
-      const ctx = document.getElementById('carbonChart').getContext('2d');
+      var labelsList = [];
+      for (var i = 0; i <= 30; i++) {
+        labelsList.push('Day ' + i);
+      }
+
+      var ctx = document.getElementById('carbonChart').getContext('2d');
       chart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: Array.from({length: 31}, (_, i) => `Day ${i}`),
+          labels: labelsList,
           datasets: [
             {
               label: 'Carbon Created by AI (kg)',
@@ -355,53 +360,58 @@
     }
 
     function calculate() {
-      const hours = parseFloat(hoursInput.value);
-      const gpus = parseFloat(gpusInput.value);
-      const dailyPower = parseFloat(powerInput.value);
-      const savingsPercent = parseFloat(savingsInput.value) / 100;
+      var hours = parseFloat(hoursInput.value);
+      var gpus = parseFloat(gpusInput.value);
+      var dailyPower = parseFloat(powerInput.value);
+      var savingsPercent = parseFloat(savingsInput.value) / 100;
 
-      hoursDisplay.textContent = `${hours} hrs`;
-      gpusDisplay.textContent = `${gpus}`;
-      powerDisplay.textContent = `${dailyPower} kWh`;
-      savingsDisplay.textContent = `${savingsInput.value}%`;
+      hoursDisplay.textContent = hours + ' hrs';
+      gpusDisplay.textContent = gpus;
+      powerDisplay.textContent = dailyPower + ' kWh';
+      savingsDisplay.textContent = savingsInput.value + '%';
 
-      const gpuWattage = 0.35;
-      const co2PerKwh = 0.4;
+      var gpuWattage = 0.35;
+      var co2PerKwh = 0.4;
 
-      const aiPowerUsed = hours * gpus * gpuWattage;
-      const totalAiCarbon = aiPowerUsed * co2PerKwh;
+      var aiPowerUsed = hours * gpus * gpuWattage;
+      var totalAiCarbon = aiPowerUsed * co2PerKwh;
 
-      const dailyKwhSaved = dailyPower * savingsPercent;
-      const dailyCo2Saved = dailyKwhSaved * co2PerKwh;
+      var dailyKwhSaved = dailyPower * savingsPercent;
+      var dailyCo2Saved = dailyKwhSaved * co2PerKwh;
 
-      const paybackDays = dailyCo2Saved > 0 ? (totalAiCarbon / dailyCo2Saved).toFixed(1) : 999;
+      var paybackDays = dailyCo2Saved > 0 ? (totalAiCarbon / dailyCo2Saved).toFixed(1) : 999;
 
-      aiCostVal.textContent = `${totalAiCarbon.toFixed(1)} kg`;
-      dailySavingsVal.textContent = `${dailyCo2Saved.toFixed(1)} kg`;
+      aiCostVal.textContent = totalAiCarbon.toFixed(1) + ' kg';
+      dailySavingsVal.textContent = dailyCo2Saved.toFixed(1) + ' kg';
       
-      if (paybackDays <= 30) {
-        paybackVal.textContent = `${paybackDays} days`;
+      if (parseFloat(paybackDays) <= 30) {
+        paybackVal.textContent = paybackDays + ' days';
         statusBanner.className = 'status-banner success';
-        statusText.textContent = `Great choice! The AI pays off its carbon cost in just ${paybackDays} days.`;
+        statusText.textContent = 'Great choice! The AI pays off its carbon cost in just ' + paybackDays + ' days.';
       } else {
-        paybackVal.textContent = `${paybackDays} days`;
+        paybackVal.textContent = paybackDays + ' days';
         statusBanner.className = 'status-banner warning';
-        statusText.textContent = `High Carbon Alert: It takes ${paybackDays} days to pay off this AI model. Try using fewer GPU hours.`;
+        statusText.textContent = 'High Carbon Alert: It takes ' + paybackDays + ' days to pay off this AI model. Try using fewer GPU hours.';
       }
 
-      const aiCarbonLine = Array(31).fill(totalAiCarbon.toFixed(1));
-      const savedCarbonLine = Array.from({length: 31}, (_, day) => (dailyCo2Saved * day).toFixed(1));
+      var aiCarbonLine = [];
+      var savedCarbonLine = [];
+      for (var day = 0; day <= 30; day++) {
+        aiCarbonLine.push(totalAiCarbon.toFixed(1));
+        savedCarbonLine.push((dailyCo2Saved * day).toFixed(1));
+      }
 
       chart.data.datasets[0].data = aiCarbonLine;
       chart.data.datasets[1].data = savedCarbonLine;
       chart.update();
     }
 
-    [hoursInput, gpusInput, powerInput, savingsInput].forEach(input => {
-      input.addEventListener('input', calculate);
-    });
+    var inputs = [hoursInput, gpusInput, powerInput, savingsInput];
+    for (var k = 0; k < inputs.length; k++) {
+      inputs[k].addEventListener('input', calculate);
+    }
 
-    window.onload = () => {
+    window.onload = function() {
       initChart();
       calculate();
     };

@@ -11,20 +11,17 @@
   
   <style>
     :root {
-      /* Unique Navy, Teal, & Warm Amber Palette */
       --bg-color: #f4f7f6;
       --card-bg: #ffffff;
       --text-main: #1e293b;
       --text-muted: #64748b;
-      --brand-primary: #0284c7; /* Vibrant Cyan/Blue */
-      --brand-secondary: #0d9488; /* Teal */
-      --accent-warm: #f59e0b; /* Amber/Orange */
+      --brand-primary: #0284c7;
+      --brand-secondary: #0d9488;
+      --accent-warm: #f59e0b;
       --border-color: #e2e8f0;
-      
       --alert-green-bg: #f0fdf4;
       --alert-green-border: #bbf7d0;
       --alert-green-text: #166534;
-      
       --alert-red-bg: #fff1f2;
       --alert-red-border: #fecdd3;
       --alert-red-text: #9f1239;
@@ -49,7 +46,6 @@
       margin: 0 auto;
     }
 
-    /* Header Section */
     header {
       margin-bottom: 2rem;
       text-align: left;
@@ -68,7 +64,6 @@
       margin-top: 0.25rem;
     }
 
-    /* Top Grid: Cards */
     .top-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -105,7 +100,6 @@
       margin-top: 0.25rem;
     }
 
-    /* Main Grid: Controls + Chart */
     .main-grid {
       display: grid;
       grid-template-columns: 1fr 1.5fr;
@@ -118,7 +112,6 @@
       }
     }
 
-    /* Sliders Form */
     .slider-group {
       margin-bottom: 1.25rem;
     }
@@ -161,7 +154,6 @@
       cursor: pointer;
     }
 
-    /* Status Banner */
     .status-banner {
       padding: 1rem;
       border-radius: 10px;
@@ -182,3 +174,237 @@
     .status-banner.warning {
       background-color: var(--alert-red-bg);
       border: 1px solid var(--alert-red-border);
+      color: var(--alert-red-text);
+    }
+
+    .chart-container {
+      position: relative;
+      height: 350px;
+      width: 100%;
+    }
+
+    .explanation-box {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background-color: #fafafa;
+      border-left: 4px solid var(--brand-secondary);
+      border-radius: 0 8px 8px 0;
+      font-size: 0.85rem;
+      color: var(--text-main);
+    }
+
+    .explanation-box h4 {
+      margin-bottom: 0.3rem;
+      color: #0f172a;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>AI Carbon Checker</h1>
+      <p>Does our AI save more energy than it consumes? Let's check the numbers.</p>
+    </header>
+
+    <div class="top-grid">
+      <div class="card">
+        <div class="card-title">AI Carbon Created</div>
+        <div class="card-value" id="aiCostVal">0 kg</div>
+        <div class="card-subtitle">One-time pollution to train & run the AI</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Daily CO₂ Saved</div>
+        <div class="card-value" id="dailySavingsVal">0 kg</div>
+        <div class="card-subtitle">Power saved every day in the building</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Time to Break Even</div>
+        <div class="card-value" id="paybackVal">0 days</div>
+        <div class="card-subtitle">Days needed for AI to pay off its carbon cost</div>
+      </div>
+    </div>
+
+    <div class="main-grid">
+      <div class="card">
+        <h2 style="font-size: 1.1rem; margin-bottom: 1.25rem;">Adjust the Numbers</h2>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span class="slider-label">Hours to Train AI</span>
+            <span class="slider-value" id="hoursDisplay">24 hrs</span>
+          </div>
+          <div class="slider-desc">How long the computers worked to create the AI model</div>
+          <input type="range" id="hours" min="1" max="100" value="24">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span class="slider-label">Number of Computers (GPUs)</span>
+            <span class="slider-value" id="gpusDisplay">4</span>
+          </div>
+          <div class="slider-desc">More computers = faster results, but uses more power</div>
+          <input type="range" id="gpus" min="1" max="16" value="4">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span class="slider-label">Daily Building Power Use</span>
+            <span class="slider-value" id="powerDisplay">500 kWh</span>
+          </div>
+          <div class="slider-desc">Normal energy used per day before using AI</div>
+          <input type="range" id="power" min="100" max="2000" step="50" value="500">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span class="slider-label">AI Energy Savings</span>
+            <span class="slider-value" id="savingsDisplay">15%</span>
+          </div>
+          <div class="slider-desc">How much power the AI saves by optimizing heating/lights</div>
+          <input type="range" id="savings" min="1" max="40" value="15">
+        </div>
+      </div>
+
+      <div class="card">
+        <div id="statusBanner" class="status-banner success">
+          <span id="statusText">Checking...</span>
+        </div>
+
+        <h3 style="font-size: 1rem; margin-bottom: 0.75rem; color: #334155;">30-Day CO₂ Tracking</h3>
+        
+        <div class="chart-container">
+          <canvas id="carbonChart"></canvas>
+        </div>
+
+        <div class="explanation-box">
+          <h4>How to read this chart:</h4>
+          <p>The <strong>orange line</strong> shows the carbon pollution created by making the AI. The <strong>teal line</strong> shows the carbon saved over time. When the teal line crosses the orange line, the AI becomes <strong>environmentally friendly</strong>!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const hoursInput = document.getElementById('hours');
+    const gpusInput = document.getElementById('gpus');
+    const powerInput = document.getElementById('power');
+    const savingsInput = document.getElementById('savings');
+
+    const hoursDisplay = document.getElementById('hoursDisplay');
+    const gpusDisplay = document.getElementById('gpusDisplay');
+    const powerDisplay = document.getElementById('powerDisplay');
+    const savingsDisplay = document.getElementById('savingsDisplay');
+
+    const aiCostVal = document.getElementById('aiCostVal');
+    const dailySavingsVal = document.getElementById('dailySavingsVal');
+    const paybackVal = document.getElementById('paybackVal');
+
+    const statusBanner = document.getElementById('statusBanner');
+    const statusText = document.getElementById('statusText');
+
+    let chart;
+
+    function initChart() {
+      const ctx = document.getElementById('carbonChart').getContext('2d');
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: Array.from({length: 31}, (_, i) => `Day ${i}`),
+          datasets: [
+            {
+              label: 'Carbon Created by AI (kg)',
+              data: [],
+              borderColor: '#f59e0b',
+              backgroundColor: '#f59e0b',
+              borderWidth: 2,
+              borderDash: [5, 5],
+              pointRadius: 0
+            },
+            {
+              label: 'Total CO₂ Saved (kg)',
+              data: [],
+              borderColor: '#0d9488',
+              backgroundColor: 'rgba(13, 148, 136, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { font: { family: 'Inter', size: 12 } }
+            }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'Days of Running the AI' }
+            },
+            y: {
+              title: { display: true, text: 'Kilograms of CO₂' },
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    function calculate() {
+      const hours = parseFloat(hoursInput.value);
+      const gpus = parseFloat(gpusInput.value);
+      const dailyPower = parseFloat(powerInput.value);
+      const savingsPercent = parseFloat(savingsInput.value) / 100;
+
+      hoursDisplay.textContent = `${hours} hrs`;
+      gpusDisplay.textContent = `${gpus}`;
+      powerDisplay.textContent = `${dailyPower} kWh`;
+      savingsDisplay.textContent = `${savingsInput.value}%`;
+
+      const gpuWattage = 0.35;
+      const co2PerKwh = 0.4;
+
+      const aiPowerUsed = hours * gpus * gpuWattage;
+      const totalAiCarbon = aiPowerUsed * co2PerKwh;
+
+      const dailyKwhSaved = dailyPower * savingsPercent;
+      const dailyCo2Saved = dailyKwhSaved * co2PerKwh;
+
+      const paybackDays = dailyCo2Saved > 0 ? (totalAiCarbon / dailyCo2Saved).toFixed(1) : 999;
+
+      aiCostVal.textContent = `${totalAiCarbon.toFixed(1)} kg`;
+      dailySavingsVal.textContent = `${dailyCo2Saved.toFixed(1)} kg`;
+      
+      if (paybackDays <= 30) {
+        paybackVal.textContent = `${paybackDays} days`;
+        statusBanner.className = 'status-banner success';
+        statusText.textContent = `Great choice! The AI pays off its carbon cost in just ${paybackDays} days.`;
+      } else {
+        paybackVal.textContent = `${paybackDays} days`;
+        statusBanner.className = 'status-banner warning';
+        statusText.textContent = `High Carbon Alert: It takes ${paybackDays} days to pay off this AI model. Try using fewer GPU hours.`;
+      }
+
+      const aiCarbonLine = Array(31).fill(totalAiCarbon.toFixed(1));
+      const savedCarbonLine = Array.from({length: 31}, (_, day) => (dailyCo2Saved * day).toFixed(1));
+
+      chart.data.datasets[0].data = aiCarbonLine;
+      chart.data.datasets[1].data = savedCarbonLine;
+      chart.update();
+    }
+
+    [hoursInput, gpusInput, powerInput, savingsInput].forEach(input => {
+      input.addEventListener('input', calculate);
+    });
+
+    window.onload = () => {
+      initChart();
+      calculate();
+    };
+  </script>
+</body>
+</html>
